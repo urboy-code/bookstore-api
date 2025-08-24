@@ -32,6 +32,8 @@ func main(){
 
 	router := gin.Default()
 	router.POST("/books", bookHandler.CreateBookHandler)
+	router.GET("/books", bookHandler.GetBooksHandler)
+	router.GET("/books/:id", bookHandler.GetBookByIDHandler)
 
 	fmt.Println("Starting server on port 8080...")
 	router.Run(":8080")
