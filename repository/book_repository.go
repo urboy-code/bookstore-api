@@ -26,3 +26,39 @@ func (r *BookRepository) CreateBook(book model.Book) (int, error){
 
 	return bookID, nil
 }
+
+func (r *BookRepository) GetBooks() ([]model.Book, error){
+
+	query := `SELECT * FROM books`
+	rows, err := r.db.Query(query)
+	if err != nil{
+		return nil, err
+	}
+	defer rows.Close()
+
+	var books []model.Book
+
+	for rows.Next(){
+		var book model.Book
+
+		if err := rows.Scan(&book.ID, &book.Title, &book.Author, &book.Description); err != nil{
+			return nil, err
+		}
+
+		books = append(books, book)
+	}
+	return books, nil
+}
+
+func (r *BookRepository) GetBookByID(id int) (model.Book, error){
+	var book model.Book
+
+	query := `SELECT * FROM books WHERE id = $1`
+
+	err := r.db.QueryRow(query, id).Scan(&book.ID, &book.Title, &book.Author, &book.Description)
+	if(err != nil){
+		return book, err
+	}
+
+	return book, nil
+}
