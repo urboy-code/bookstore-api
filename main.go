@@ -35,6 +35,7 @@ func main(){
 	router.GET("/books", bookHandler.GetBooksHandler)
 	router.GET("/books/:id", bookHandler.GetBookByIDHandler)
 	router.PUT("/books/:id", bookHandler.UpdateBookHandler)
+	router.DELETE("/books/:id", bookHandler.DeleteBookHandler)
 
 	fmt.Println("Starting server on port 8080...")
 	router.Run(":8080")
