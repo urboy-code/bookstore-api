@@ -120,3 +120,25 @@ func (h *BookHandler) UpdateBookHandler(c *gin.Context){
 	input.ID = id
 	c.JSON(http.StatusOK, input)
 }
+
+func (h *BookHandler) DeleteBookHandler(c *gin.Context){
+	idStr := c.Param("id")
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil{
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
+	}
+
+	err = h.repo.DeleteBook(id)
+	if err != nil{
+		if err == sql.ErrNoRows{
+			c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete book"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Book deleted successfully"})
+}
