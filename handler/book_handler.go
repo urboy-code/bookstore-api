@@ -79,7 +79,6 @@ func (h *BookHandler) GetBooksHandler(c *gin.Context){
 // @Failure 404 {object} gin.H{"error": "Book not found"}
 // @Failure 500 {object} gin.H{"error": "Internal Server Error"}
 // @Router /books/{id} [get]
-
 func (h *BookHandler) GetBookByIDHandler(c *gin.Context){
 	idStr := c.Param("id")
 
@@ -103,6 +102,19 @@ func (h *BookHandler) GetBookByIDHandler(c *gin.Context){
 	c.JSON(http.StatusOK, book)
 }
 
+// UpdateBookHandler adalah fungsi untuk menangani permintaan memperbarui data buku berdasarkan ID
+// @Summary Update a book by ID
+// @Description Update a book by its ID in the database
+// @Tags books
+// @Accept json
+// @Produce json
+// @Param id path int true "Book ID"
+// @Param book body model.BookInput true "Book Input"
+// @Success 200 {object} model.Book
+// @Failure 400 {object} gin.H{"error": "Bad Request"}
+// @Failure 404 {object} gin.H{"error": "Book not found"}
+// @Failure 500 {object} gin.H{"error": "Internal Server Error"}
+// @Router /books/{id} [put]
 func (h *BookHandler) UpdateBookHandler(c *gin.Context){
 	idStr := c.Param("id")
 
