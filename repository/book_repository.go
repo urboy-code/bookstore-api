@@ -84,3 +84,23 @@ func (r *BookRepository) UpdateBook(id int, book model.Book) error{
 
 	return nil
 }
+
+func (r *BookRepository) DeleteBook(id int) error{
+	query := `DELETE FROM books WHERE id = $1`
+
+	result, err := r.db.Exec(query, id)
+	if err != nil{
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil{
+		return err
+	}
+
+	if rowsAffected == 0{
+		return sql.ErrNoRows
+	}
+
+	return nil
+}
