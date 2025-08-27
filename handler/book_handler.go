@@ -144,6 +144,18 @@ func (h *BookHandler) UpdateBookHandler(c *gin.Context){
 	c.JSON(http.StatusOK, input)
 }
 
+// DeleteBookHandler adalah fungsi untuk menangani permintaan menghapus buku berdasarkan ID
+// @Summary Delete a book by ID
+// @Description Delete a book by its ID from the database
+// @Tags books
+// @Accept json
+// @Produce json
+// @Param id path int true "Book ID"
+// @Success 200 {object} gin.H{"message": "Book deleted successfully"}
+// @Failure 400 {object} gin.H{"error": "Bad Request"}
+// @Failure 404 {object} gin.H{"error": "Book not found"}	
+// @Failure 500 {object} gin.H{"error": "Internal Server Error"}
+// @Router /books/{id} [delete]
 func (h *BookHandler) DeleteBookHandler(c *gin.Context){
 	idStr := c.Param("id")
 
