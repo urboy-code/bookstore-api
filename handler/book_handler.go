@@ -68,6 +68,17 @@ func (h *BookHandler) GetBooksHandler(c *gin.Context){
 }	
 
 // GetBookByIDHandler adalah fungsi untuk menangani permintaan mendapatkan buku berdasarkan ID
+// @Summary Get a book by ID
+// @Description Get a book by its ID from the database
+// @Tags books
+// @Accept json
+// @Produce json
+// @Param id path int true "Book ID"
+// @Success 200 {object} model.Book
+// @Failure 400 {object} gin.H{"error": "Bad Request"}
+// @Failure 404 {object} gin.H{"error": "Book not found"}
+// @Failure 500 {object} gin.H{"error": "Internal Server Error"}
+// @Router /books/{id} [get]
 
 func (h *BookHandler) GetBookByIDHandler(c *gin.Context){
 	idStr := c.Param("id")
