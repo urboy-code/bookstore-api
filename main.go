@@ -1,4 +1,4 @@
-package main
+   package main
 
 import (
 	"bookstore-api/handler"
@@ -34,6 +34,7 @@ func main(){
 	router.POST("/books", bookHandler.CreateBookHandler)
 	router.GET("/books", bookHandler.GetBooksHandler)
 	router.GET("/books/:id", bookHandler.GetBookByIDHandler)
+	router.PUT("/books/:id", bookHandler.UpdateBookHandler)
 
 	fmt.Println("Starting server on port 8080...")
 	router.Run(":8080")
