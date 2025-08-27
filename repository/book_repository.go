@@ -62,3 +62,25 @@ func (r *BookRepository) GetBookByID(id int) (model.Book, error){
 
 	return book, nil
 }
+
+func (r *BookRepository) UpdateBook(id int, book model.Book) error{
+	query := `UPDATE books SET title = $1, author = $2, description = $3 WHERE id = $4`
+
+	result, err := r.db.Exec(query, book.Title, book.Author, book.Description, id)
+
+	if err != nil{
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+
+	if err != nil{
+		return err
+	}
+
+	if rowsAffected == 0{
+		return sql.ErrNoRows
+	}
+
+	return nil
+}
