@@ -91,3 +91,32 @@ func (h *BookHandler) GetBookByIDHandler(c *gin.Context){
 
 	c.JSON(http.StatusOK, book)
 }
+
+func (h *BookHandler) UpdateBookHandler(c *gin.Context){
+	idStr := c.Param("id")
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil{
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
+		return
+	}
+
+	var input model.Book
+	if err := c.ShouldBindJSON(&input); err != nil{
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input: " + err.Error()})
+		return
+	}
+
+	err = h.repo.UpdateBook(id, input)
+	if err != nil{
+		if err == sql.ErrNoRows{
+			c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
+		}
+
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update book"})
+		return
+	}
+
+	input.ID = id
+	c.JSON(http.StatusOK, input)
+}
