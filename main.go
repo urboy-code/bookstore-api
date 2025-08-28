@@ -6,13 +6,23 @@ import (
 	"fmt"
 	"log"
 	"database/sql"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	_ "github.com/jackc/pgx/v5/stdlib"
+
 )
 
 func main(){
-	connStr := "postgres://postgres:postgres@localhost:5432/bookstore?sslmode=disable"
+	err := godotenv.Load()
+	if err != nil{
+		log.Println("Error loading .env file, proceeding with system environment variables")
+	}
+	connStr := os.Getenv("DATABASE_URL")
+	if connStr == ""{
+		log.Fatal("DATABASE_URL environment variable not set")
+	}
 
 	db, err := sql.Open("pgx", connStr)
 	if err != nil {
