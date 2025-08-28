@@ -3,7 +3,6 @@ package handler
 import (
 	"bookstore-api/model"
 	"bookstore-api/repository"
-	"database/sql"
 	"net/http"
 	"strconv"
 
@@ -90,12 +89,7 @@ func (h *BookHandler) GetBookByIDHandler(c *gin.Context){
 
 	book, err := h.repo.GetBookByID(id)
 	if err != nil{
-		if err == sql.ErrNoRows{
-			c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
-			return
-		}
-
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve book"})
+		ErrorHandler(c, err)
 		return
 	}
 
@@ -120,26 +114,27 @@ func (h *BookHandler) UpdateBookHandler(c *gin.Context){
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil{
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
+		c.JSON(http.StatusBadRequest, model.AppError{
+			Code : http.StatusBadRequest,
+			Message: "Invalid book ID",
+		})
 		return
 	}
 
 	var input model.Book
 	if err := c.ShouldBindJSON(&input); err != nil{
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input: " + err.Error()})
+		c.JSON(http.StatusBadRequest, model.AppError{
+			Code: http.StatusBadRequest,
+			Message: "Invalid input: " + err.Error(),
+		})
 		return
 	}
 
 	err = h.repo.UpdateBook(id, input)
 	if err != nil{
-		if err == sql.ErrNoRows{
-			c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
-		}
-
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update book"})
+		ErrorHandler(c, err)
 		return
 	}
-
 	input.ID = id
 	c.JSON(http.StatusOK, input)
 }
@@ -161,17 +156,16 @@ func (h *BookHandler) DeleteBookHandler(c *gin.Context){
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil{
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
+		c.JSON(http.StatusBadRequest, model.AppError{
+			Code : http.StatusBadRequest,
+			Message: "Invalid book ID",
+		})
+		return
 	}
 
 	err = h.repo.DeleteBook(id)
 	if err != nil{
-		if err == sql.ErrNoRows{
-			c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
-			return
-		}
-
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete book"})
+		ErrorHandler(c, err)
 		return
 	}
 
