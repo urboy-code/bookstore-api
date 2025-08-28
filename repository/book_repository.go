@@ -3,7 +3,10 @@ package repository
 import (
 	"bookstore-api/model"
 	"database/sql"
+	"errors"
 )
+
+var ErrBookNotFound = errors.New("book not found")
 
 type BookRepository struct {
 	db *sql.DB 
@@ -57,6 +60,9 @@ func (r *BookRepository) GetBookByID(id int) (model.Book, error){
 
 	err := r.db.QueryRow(query, id).Scan(&book.ID, &book.Title, &book.Author, &book.Description)
 	if(err != nil){
+		if err == sql.ErrNoRows{
+			return book, ErrBookNotFound
+		}
 		return book, err
 	}
 
@@ -79,7 +85,7 @@ func (r *BookRepository) UpdateBook(id int, book model.Book) error{
 	}
 
 	if rowsAffected == 0{
-		return sql.ErrNoRows
+		return ErrBookNotFound
 	}
 
 	return nil
@@ -99,7 +105,7 @@ func (r *BookRepository) DeleteBook(id int) error{
 	}
 
 	if rowsAffected == 0{
-		return sql.ErrNoRows
+		return ErrBookNotFound
 	}
 
 	return nil
