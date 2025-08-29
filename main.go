@@ -1,18 +1,27 @@
-   package main
+package main
 
 import (
 	"bookstore-api/handler"
 	"bookstore-api/repository"
+	"database/sql"
 	"fmt"
 	"log"
-	"database/sql"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	_ "github.com/jackc/pgx/v5/stdlib"
-
+	"github.com/joho/godotenv"
 )
+
+func LoggerMiddleware() gin.HandlerFunc{
+	return func (c *gin.Context){
+		startTime := time.Now()
+		c.Next()
+		duration := time.Since(startTime)
+		log.Printf("Request: %s %s %d - Duration:%s", c.Request.Method, c.Request.RequestURI, c.Writer.Status(), duration)
+	}
+}
 
 func main(){
 	err := godotenv.Load()
@@ -41,6 +50,7 @@ func main(){
 	bookHandler := handler.NewBookHandler(bookRepo)
 
 	router := gin.Default()
+	router.Use(LoggerMiddleware())
 	router.POST("/books", bookHandler.CreateBookHandler)
 	router.GET("/books", bookHandler.GetBooksHandler)
 	router.GET("/books/:id", bookHandler.GetBookByIDHandler)
