@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"bytes"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -29,7 +30,8 @@ func setupTestRouter() (*gin.Engine, *repository.BookRepository){
 
 	router := gin.Default()
 	router.GET("/books", handler.GetBooksHandler)
-	router.GET("/books/:id", handler.GetBookByIDHandler)	
+	router.GET("/books/:id", handler.GetBookByIDHandler)
+	router.POST("/books", handler.CreateBookHandler)
 
 	return router, repo
 }
@@ -120,6 +122,49 @@ func TestGetBookByIDHandler(t *testing.T){
 	if recorder.Code != http.StatusNotFound{
 		t.Errorf("Expected status code 404 but got %d", recorder.Code)
 	}
+}
 
+func TestCreateBookHandler(t *testing.T){
+	// This function can be implemented similarly to the other test functions
+	// by setting up the test router, creating a POST request with a book payload,
+	// and checking the response for correctness.
 
+	router, _ := setupTestRouter()
+	
+	// Test case: Valid Book Creation
+	bookPayload := `{"title": "Test Book", "author": "Test Author", "description": "Test Description"}`
+	bodyHeader := bytes.NewReader([]byte(bookPayload))
+
+	// Create request Post with body
+	recorder := httptest.NewRecorder()
+	request, _ := http.NewRequest(http.MethodPost, "/books", bodyHeader)
+	request.Header.Set("Content-Type", "application/json")
+
+	// Run the request
+	router.ServeHTTP(recorder, request)
+
+	// Check the result of the request
+	if recorder.Code != http.StatusCreated{
+		t.Errorf("Expected status code 201 but got %d", recorder.Code)
+	}
+
+	var createdBook model.Book
+	json.Unmarshal(recorder.Body.Bytes(), &createdBook)
+	if createdBook.Title != "Test Book"{
+		t.Errorf("Expected book title 'Test Book', but got '%s'", createdBook.Title)
+	}
+
+	// Test case: Invalid Book Creation (missing title)
+	invalidPayload := `{"author": "Test Author", "description": "Test Description"}`
+	bodyHeader = bytes.NewReader([]byte(invalidPayload))
+
+	recorder = httptest.NewRecorder()
+	request, _ = http.NewRequest(http.MethodPost, "/books", bodyHeader)
+	request.Header.Set("Content-Type", "application/json")
+
+	router.ServeHTTP(recorder, request)
+	if recorder.Code != http.StatusBadRequest{
+		t.Errorf("Expected status code 400 but got %d", recorder.Code)
+	}
+	
 }
