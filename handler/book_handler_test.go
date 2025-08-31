@@ -5,6 +5,7 @@ import (
 	"bookstore-api/repository"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -28,10 +29,20 @@ func setupTestRouter() (*gin.Engine, *repository.BookRepository){
 
 	router := gin.Default()
 	router.GET("/books", handler.GetBooksHandler)
+	router.GET("/books/:id", handler.GetBookByIDHandler)	
 
 	return router, repo
 }
 
+// TestGetBooksHandler tests the GetBooksHandler function
+// It tests the following cases:
+// - an empty list of books is returned when the database is empty
+// - a single book is returned when there is only one book in the database
+//
+// The test uses the setupTestRouter function to create a test router and database
+// connection. It then creates a test request to the "/books" endpoint, and uses
+// the httptest.NewRecorder to record the response. The response code and body
+// are then checked to ensure they match the expected values.
 func TestGetBooksHandler(t *testing.T){
 	router, repo := setupTestRouter()
 
@@ -68,4 +79,47 @@ func TestGetBooksHandler(t *testing.T){
 	if books[0].Title != "Test Book"{
 		t.Errorf("Expected book title 'Test Book' but got '%s'", books[0].Title)
 	}
+}
+
+func TestGetBookByIDHandler(t *testing.T){
+	router, repo := setupTestRouter()
+
+	// Test case 1: Book Found
+	createBook := model.Book{
+		Title: "Test Book",
+		Author: "Test Author",
+	}
+	bookID, _ := repo.CreateBook(createBook)
+
+	// Create request for existing book
+	recorder := httptest.NewRecorder()
+	// Format the URL with the book ID
+	requestURL := fmt.Sprintf("/books/%d", bookID)
+	request, _ := http.NewRequest(http.MethodGet, requestURL, nil)
+
+	// Run the request
+	router.ServeHTTP(recorder, request)
+
+	// Chect the result of the request
+	if recorder.Code != http.StatusOK{
+		t.Errorf("Expected status code 200 but got %d", recorder.Code)
+	}
+
+	var foundBook model.Book
+	json.Unmarshal(recorder.Body.Bytes(), &foundBook)
+	if foundBook.Title != "Test Book" {
+		t.Errorf("Expected book title 'Test Book', but got '%s'", foundBook.Title)
+	}
+
+	// Test case 2: Book Not Found
+	recorder = httptest.NewRecorder()
+	request, _ = http.NewRequest(http.MethodGet, "/books/999", nil)
+	
+	router.ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusNotFound{
+		t.Errorf("Expected status code 404 but got %d", recorder.Code)
+	}
+
+
 }
