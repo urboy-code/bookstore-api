@@ -39,7 +39,8 @@ func (r *BookRepository) GetBooks() ([]model.Book, error){
 	}
 	defer rows.Close()
 
-	var books []model.Book
+	// for zero values
+	books := make([]model.Book, 0)
 
 	for rows.Next(){
 		var book model.Book

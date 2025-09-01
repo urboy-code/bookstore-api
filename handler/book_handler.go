@@ -169,5 +169,5 @@ func (h *BookHandler) DeleteBookHandler(c *gin.Context){
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Book deleted successfully"})
+	c.Status(http.StatusNoContent)
 }

@@ -19,7 +19,7 @@ func LoggerMiddleware() gin.HandlerFunc{
 		startTime := time.Now()
 		c.Next()
 		duration := time.Since(startTime)
-		log.Printf("Request: %s %s %d - Duration:%s", c.Request.Method, c.Request.RequestURI, c.Writer.Status(), duration)
+		log.Printf("Request: %s %s - Status: %d - Duration:%s", c.Request.Method, c.Request.RequestURI, c.Writer.Status(), duration)
 	}
 }
 
