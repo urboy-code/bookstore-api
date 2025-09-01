@@ -32,6 +32,8 @@ func setupTestRouter() (*gin.Engine, *repository.BookRepository){
 	router.GET("/books", handler.GetBooksHandler)
 	router.GET("/books/:id", handler.GetBookByIDHandler)
 	router.POST("/books", handler.CreateBookHandler)
+	router.PUT("/books/:id", handler.UpdateBookHandler)
+	router.DELETE("/books/:id", handler.DeleteBookHandler)
 
 	return router, repo
 }
@@ -167,4 +169,72 @@ func TestCreateBookHandler(t *testing.T){
 		t.Errorf("Expected status code 400 but got %d", recorder.Code)
 	}
 	
+}
+
+func TestUpdateBookHandler(t *testing.T){
+	router, repo := setupTestRouter()
+
+	// Create a book to update
+	createBook := model.Book{
+		Title: "Original Title",
+		Author: "Original Author",
+		Description: "Original Description",
+	}
+
+	bookID, _ := repo.CreateBook(createBook)
+	// Test case: Valid Book Update
+	updatePayload := `{"title": "Updated Title", "author": "Updated Author", "description": "Updated Description"}`
+	bodyHeader := bytes.NewReader([]byte(updatePayload))
+
+	// Create request Put with body
+	recorder := httptest.NewRecorder()
+	requestURL := fmt.Sprintf("/books/%d", bookID)
+	request, _ := http.NewRequest(http.MethodPut, requestURL, bodyHeader)
+	request.Header.Set("Content-Type", "application/json")
+
+	// Run the request
+	router.ServeHTTP(recorder, request)
+
+	// Check the result of the request
+	if recorder.Code != http.StatusOK{
+		t.Errorf("Expected status code 200 but got %d", recorder.Code)
+	}
+
+	var updatedBook model.Book
+	json.Unmarshal(recorder.Body.Bytes(), &updatedBook)
+	if updatedBook.Title != "Updated Title"{
+		t.Errorf("Expected book title 'Updated Title', but got '%s'", updatedBook.Title)
+	}
+}
+
+func TestDeleteBookHandler(t *testing.T){
+	router, repo := setupTestRouter()
+
+	// Create a book to delete
+	createBook := model.Book{
+		Title: "Book to Delete",
+		Author: "Test Author",
+		Description: "Test Description",
+	}
+
+	bookID, _ := repo.CreateBook(createBook)
+
+	// Test case: Valid Book Deletion
+	recorder := httptest.NewRecorder()
+	requestURL := fmt.Sprintf("/books/%d", bookID)
+	request, _ := http.NewRequest(http.MethodDelete, requestURL, nil)
+
+	// Run the request
+	router.ServeHTTP(recorder, request)
+
+	// Check the result of the request
+	if recorder.Code != http.StatusNoContent{
+		t.Errorf("Expected status code 204 but got %d", recorder.Code)
+	}
+
+	// Verify the book has been deleted
+	_, err := repo.GetBookByID(bookID)
+	if err != repository.ErrBookNotFound{
+		t.Errorf("Expected ErrBookNotFound but got %v", err)
+	}
 }
