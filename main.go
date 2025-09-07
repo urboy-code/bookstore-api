@@ -46,16 +46,27 @@ func main(){
 
 	fmt.Println("Successfully connected to the database!")
 
+	// For Books
 	bookRepo := repository.NewBookRepository(db)
 	bookHandler := handler.NewBookHandler(bookRepo)
+	
+	// For Users
+	userRepo := repository.NewUserRepository(db)
+	userHandler := handler.NewUserHandler(userRepo)
 
 	router := gin.Default()
 	router.Use(LoggerMiddleware())
+
+	// Book routes
 	router.POST("/books", bookHandler.CreateBookHandler)
 	router.GET("/books", bookHandler.GetBooksHandler)
 	router.GET("/books/:id", bookHandler.GetBookByIDHandler)
 	router.PUT("/books/:id", bookHandler.UpdateBookHandler)
 	router.DELETE("/books/:id", bookHandler.DeleteBookHandler)
+
+	// User routes
+	router.POST("/register", userHandler.RegisterUserHandler)
+
 
 	fmt.Println("Starting server on port 8080...")
 	router.Run(":8080")

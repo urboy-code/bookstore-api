@@ -16,12 +16,16 @@ type UserRepository struct {
 	db *sql.DB
 }
 
+func NewUserRepository(db *sql.DB) *UserRepository{
+	return &UserRepository{db: db}
+}
+
 // CreateUser for hashing password and storing user in db
-func (r *UserRepository) CreateUser(user *model.User) error{
+func (r *UserRepository) CreateUser(user *model.User) (int, error){
 	// hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil{
-		return err
+		return 0, err
 	}
 
 	var userID int
@@ -32,11 +36,11 @@ func (r *UserRepository) CreateUser(user *model.User) error{
 	if err != nil {
 		// Check error if any existing email (violates unique constraint)
 		if strings.Contains(err.Error(), "unique constraint"){
-			return ErrMailExists
+			return 0, ErrMailExists
 		}
-		return err
+		return 0, err
 	}
-	return nil
+	return userID, nil
 }
 
 // GetUserByEmail fetch user by email
