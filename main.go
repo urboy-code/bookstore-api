@@ -66,6 +66,7 @@ func main(){
 
 	// User routes
 	router.POST("/register", userHandler.RegisterUserHandler)
+	router.POST("/login", userHandler.LoginUserHandler)
 
 
 	fmt.Println("Starting server on port 8080...")
