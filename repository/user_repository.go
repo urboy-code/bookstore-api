@@ -57,3 +57,20 @@ func (r *UserRepository) GetUserByEmail(email string) (model.User, error){
 	}
 	return user, nil
 }
+
+// Login verify user credentials and return user details if valid
+func (r *UserRepository) Login(email, password string) (model.User, error){
+	// Find user by email
+	user, err := r.GetUserByEmail(email)
+	if err != nil{
+		return user, err
+	}
+
+	// Compare the provided password with the stored hashed password
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+	if err != nil{
+		return model.User{}, errors.New("invalid password")
+	}
+
+	return user, nil
+}
